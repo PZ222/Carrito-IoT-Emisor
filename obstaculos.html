@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Carrito IoT – Obstáculos</title>
+  <link rel="stylesheet" href="styles.obstaculos.css">
+  <link rel="stylesheet" href="styles.navbar.css">
+</head>
+<body class="obstaculos">
+  <header class="topbar">
+    <div class="brand">Carrito IoT</div>
+    <nav class="nav">
+      <a class="pill" href="./index.html"><span class="ico">🎮</span> Emisor</a>
+      <a class="pill" href="../CarritoIoT-Receptor/index.html"><span class="ico">🦻</span> Receptor</a>
+      <a class="pill active" href="./obstaculos.html"><span class="ico">⚠️</span> Obstáculos</a>
+      <a class="pill" href="./demos.html"><span class="ico">🧩</span> Demos</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <h1>SIMULADOR DE OBSTÁCULOS</h1>
+
+    <div class="row">
+      <label>Dispositivo:</label><input id="deviceId" type="number" min="1" value="1">
+      <label>Distancia (cm):</label><input id="dist" type="number" step="0.01" placeholder="ej. 20.50">
+      <label>Lado:</label>
+      <select id="lado">
+        <option value="">—</option>
+        <option value="IZQUIERDA">Izquierda</option>
+        <option value="DERECHA">Derecha</option>
+      </select>
+    </div>
+
+    <div class="badge">API: <span id="apiUrl">http://3.225.81.202:5500</span></div>
+
+    <section class="tiles">
+      <div class="tile" data-clave="1"><i>↑</i><div class="label">Adelante</div></div>
+      <div class="tile" data-clave="2"><i>≪</i><div class="label">Adel-Izq</div></div>
+      <div class="tile" data-clave="3"><i>≫</i><div class="label">Adel-Der</div></div>
+      <div class="tile" data-clave="5"><i>↓</i><div class="label">Retrocede</div></div>
+    </section>
+
+    <p id="statusText">Listo</p>
+  </main>
+
+  <footer class="footer">© Rafael • Carrito IoT</footer>
+  <script src="obstaculos.js"></script>
+</body>
+</html>

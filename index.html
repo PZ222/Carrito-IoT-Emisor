@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Carrito IoT – Emisor</title>
+  <link rel="stylesheet" href="styles.emisor.css">
+  <link rel="stylesheet" href="styles.navbar.css">
+</head>
+<body class="emisor">
+  <!-- NAVBAR -->
+  <header class="topbar">
+    <div class="brand">Carrito IoT</div>
+    <nav class="nav">
+      <a class="pill active" href="./index.html"><span class="ico">🎮</span> Emisor</a>
+      <a class="pill" href="../CarritoIoT-Receptor/index.html"><span class="ico">🦻</span> Receptor</a>
+      <a class="pill" href="./obstaculos.html"><span class="ico">⚠️</span> Obstáculos</a>
+      <a class="pill" href="./demos.html"><span class="ico">🧩</span> Demos</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <h1>CONTROL DE MOVIMIENTOS</h1>
+
+    <div class="badge">API: <span id="apiUrl">http://3.225.81.202:5500</span></div>
+    <div id="wsBadge" class="badge">WS: desconectado</div>
+
+    <section class="panel">
+      <div class="controls">
+        <label>Dispositivo:</label>
+        <input id="deviceId" type="number" min="1" value="1">
+      </div>
+
+      <div class="grid" id="tilesGrid">
+        <!-- Tus botones/tiles existentes funcionan igual, el JS los engancha por data-cmd -->
+        <div class="tile" data-cmd="ADELANTE"><i>↑</i><span>Adelante</span></div>
+        <div class="tile" data-cmd="VUELTA_ADELANTE_IZQUIERDA"><i>≪</i><span>Vta Adel Izq</span></div>
+        <div class="tile" data-cmd="VUELTA_ADELANTE_DERECHA"><i>≫</i><span>Vta Adel Der</span></div>
+        <div class="tile" data-cmd="ATRAS"><i>↓</i><span>Atrás</span></div>
+
+        <div class="tile" data-cmd="GIRO_90_IZQUIERDA"><i>↺</i><span>Giro 90° Izq</span></div>
+        <div class="tile" data-cmd="GIRO_90_DERECHA"><i>↻</i><span>Giro 90° Der</span></div>
+        <div class="tile" data-cmd="GIRO_360_IZQUIERDA"><i>↺</i><span>Giro 360° Izq</span></div>
+        <div class="tile" data-cmd="GIRO_360_DERECHA"><i>↻</i><span>Giro 360° Der</span></div>
+      </div>
+    </section>
+
+    <p id="statusText">Listo</p>
+  </main>
+
+  <footer class="footer">© Rafael • Carrito IoT</footer>
+  <script src="app.js"></script>
+</body>
+</html>

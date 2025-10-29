@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Carrito IoT – Secuencias DEMO</title>
+  <link rel="stylesheet" href="styles.css"/>
+  <style>
+    /* Mini estilos para la página de Demos (usa tu paleta) */
+    :root{
+      --bg:#0b0f14; --panel:#0f151e; --ring:#273348; --text:#e9eef6;
+      --brand:#e84d4d; --ok:#41d69f; --warn:#ffb23d; --muted:#9fb0c7;
+    }
+    body{margin:0; font:600 16px/1.45 Inter,system-ui,Segoe UI,Roboto,Arial; color:var(--text);
+      background: radial-gradient(1000px 600px at 50% -15%, rgba(232,77,77,.10), transparent 60%),
+                  linear-gradient(180deg,#0a0d12,var(--bg));}
+    .container{max-width:1100px; margin:0 auto; padding:26px 16px 90px;}
+    .topbar{display:flex; gap:10px; align-items:center; padding:12px 8px; position:sticky; top:0; background:#0b1017cc; backdrop-filter:blur(6px);}
+    .pill{display:inline-flex; gap:8px; align-items:center; border:1px solid var(--ring); border-radius:999px; padding:8px 14px; background:#0f1420;}
+    .pill.active{outline:2px solid rgba(232,77,77,.35);}
+    h1{font-size:clamp(28px,3vw,44px); margin:20px 0 16px;}
+    .row{display:flex; gap:12px; flex-wrap:wrap; align-items:center; margin:10px 0;}
+    .box{border:1px solid var(--ring); background:#0f141c; border-radius:14px; padding:14px;}
+    input,select,button{border-radius:12px; border:1px solid var(--ring); background:#0f141c; color:var(--text); padding:10px 12px; font-weight:600;}
+    button.primary{background:#e84d4d; border-color:#e84d4d; color:#fff;}
+    .badge{display:inline-flex; align-items:center; padding:8px 12px; border-radius:999px; font-weight:700;}
+    .badge.ok{background:#123b2e;color:#9af2cf;border:1px solid #1d6a51;}
+    .badge.err{background:#3a1414;color:#ffb3b3;border:1px solid #612626;}
+    .list{margin-top:10px;}
+    .item{border:1px solid var(--ring); background:#0f141c; border-radius:10px; padding:10px 12px; margin-top:8px;}
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <!-- Navbar simple -->
+    <div class="topbar">
+      <a class="pill" href="index.html">🎮 Emisor</a>
+      <a class="pill" href="../CarritIoT-Receptor/index.html">🦻 Receptor</a>
+      <a class="pill" href="obstaculos.html">⚠️ Obstáculos</a>
+      <span class="pill active">🧩 Demos</span>
+    </div>
+
+    <h1>SECUENCIAS DEMO</h1>
+
+    <div class="row">
+      <span class="pill">API:&nbsp;<code id="apiSpan"></code></span>
+      <span id="badgeCrear" class="badge err" style="display:none;"></span>
+      <span id="badgeSeq" class="badge ok" style="display:none;"></span>
+    </div>
+
+    <!-- Crear secuencia -->
+    <div class="box">
+      <div class="row">
+        <label>Dispositivo:</label>
+        <input id="deviceId" value="1" style="width:100px"/>
+        <label>Nombre:</label>
+        <input id="seqNombre" value="DEMO_1" style="min-width:220px"/>
+      </div>
+      <div class="row">
+        <input id="seqDesc" value="Secuencia simple" style="flex:1"/>
+        <button id="btnCrear" class="primary">Crear secuencia</button>
+      </div>
+    </div>
+
+    <!-- Agregar paso -->
+    <div class="box" style="margin-top:14px;">
+      <div class="row">
+        <label>Secuencia:</label>
+        <select id="selSecuencia" style="min-width:260px;"></select>
+        <button id="btnCargar">Cargar</button>
+      </div>
+      <div class="row">
+        <select id="selMovimiento" style="min-width:260px;">
+          <!-- Ajusta con tu catálogo (clave_modelo→id_mov) -->
+          <option value="1">ADELANTE (1)</option>
+          <option value="2">VUELTA ADEL IZQ (2)</option>
+          <option value="3">VUELTA ADEL DER (3)</option>
+          <option value="5">ATRÁS (5)</option>
+          <option value="9">GIRO 90° IZQ (9)</option>
+          <option value="10">GIRO 90° DER (10)</option>
+          <option value="11">GIRO 360° IZQ (11)</option>
+          <option value="12">GIRO 360° DER (12)</option>
+        </select>
+        <input id="ordenPaso" type="number" value="1" min="1" style="width:100px"/>
+        <input id="durMs" type="number" value="1000" min="100" step="100" style="width:140px"/>
+      </div>
+      <div class="row">
+        <button id="btnAgregarPaso">Agregar paso</button>
+        <button id="btnIniciar" class="primary">Iniciar secuencia</button>
+      </div>
+
+      <div class="list" id="listaPasos"></div>
+    </div>
+
+    <div style="margin-top:26px; color:#9fb0c7;">© Rafael • Carrito IoT</div>
+  </div>
+
+<script>
+  // === CONFIG ===
+  const API = "http://3.225.81.202:5500/api";
+  document.getElementById("apiSpan").textContent = API;
+
+  // ==== Util ====
+  function showBadge(el, text, cls){
+    el.textContent = text;
+    el.className = "badge " + cls;
+    el.style.display = "inline-flex";
+  }
+  function hideBadge(el){ el.style.display="none"; }
+
+  async function fetchJson(url, opts){
+    try{
+      const r = await fetch(url, opts);
+      if(!r.ok){
+        let msg = `${r.status} ${r.statusText}`;
+        try{
+          const j = await r.json();
+          if(j && j.error) msg = j.error;
+        }catch{
+          try{ msg = await r.text(); }catch{}
+        }
+        throw new Error(msg);
+      }
+      const j = await r.json();
+      if(!j.ok) throw new Error(j.error || "Error API");
+      return j.data;
+    }catch(e){ throw e; }
+  }
+
+  // ==== DOM ====
+  const els = {
+    badgeCrear : document.getElementById("badgeCrear"),
+    badgeSeq   : document.getElementById("badgeSeq"),
+    deviceId   : document.getElementById("deviceId"),
+    seqNombre  : document.getElementById("seqNombre"),
+    seqDesc    : document.getElementById("seqDesc"),
+    btnCrear   : document.getElementById("btnCrear"),
+    selSecuencia: document.getElementById("selSecuencia"),
+    btnCargar  : document.getElementById("btnCargar"),
+    selMovimiento: document.getElementById("selMovimiento"),
+    ordenPaso  : document.getElementById("ordenPaso"),
+    durMs      : document.getElementById("durMs"),
+    btnAgregarPaso: document.getElementById("btnAgregarPaso"),
+    btnIniciar : document.getElementById("btnIniciar"),
+    listaPasos : document.getElementById("listaPasos"),
+  };
+
+  // ==== Lógica ====
+  async function cargarSecuencias(){
+    try{
+      const rows = await fetchJson(`${API}/secuencias`);
+      els.selSecuencia.innerHTML = rows.map(r =>
+        `<option value="${r.id_seq}">${r.nombre} (id:${r.id_seq})</option>`
+      ).join("");
+      showBadge(els.badgeSeq, "Secuencias OK", "ok");
+    }catch(e){
+      showBadge(els.badgeSeq, "Error al cargar: " + e.message, "err");
+    }
+  }
+
+  async function crearSecuencia(){
+    hideBadge(els.badgeCrear);
+    try{
+      const body = {
+        nombre: els.seqNombre.value.trim(),
+        descripcion: els.seqDesc.value.trim(),
+        autor: "rafa",
+        es_evasion: false
+      };
+      await fetchJson(`${API}/secuencias`, {
+        method:"POST",
+        headers:{ "Content-Type":"application/json" },
+        body: JSON.stringify(body)
+      });
+      showBadge(els.badgeCrear, "Crear: OK", "ok");
+      await cargarSecuencias();
+    }catch(e){
+      showBadge(els.badgeCrear, "Crear: " + e.message, "err");
+    }
+  }
+
+  async function cargarPasos(){
+    const id_seq = els.selSecuencia.value;
+    els.listaPasos.textContent = "Cargando...";
+    try{
+      const rows = await fetchJson(`${API}/secuencias/${id_seq}/pasos`);
+      if(!rows.length){ els.listaPasos.textContent = "Sin pasos"; return; }
+      els.listaPasos.innerHTML = rows.map(r => `
+        <div class="item">#${r.orden} • mov:${r.id_mov} (${r.mov_desc || r.clave || ""}) • ${r.dur_ms} ms</div>
+      `).join("");
+    }catch(e){
+      els.listaPasos.textContent = "Error: " + e.message;
+    }
+  }
+
+  async function agregarPaso(){
+    const id_seq = els.selSecuencia.value;
+    const id_mov = Number(els.selMovimiento.value);
+    const orden  = Number(els.ordenPaso.value);
+    const dur_ms = Number(els.durMs.value);
+
+    try{
+      await fetchJson(`${API}/secuencias/${id_seq}/pasos`, {
+        method:"POST",
+        headers:{ "Content-Type":"application/json" },
+        body: JSON.stringify({ id_mov, orden, dur_ms })
+      });
+      await cargarPasos();
+    }catch(e){
+      alert("Error agregando paso: " + e.message);
+    }
+  }
+
+  async function iniciarSecuencia(){
+    const id_seq = els.selSecuencia.value;
+    const id_dispositivo = Number(els.deviceId.value || "1");
+    try{
+      await fetchJson(`${API}/secuencias/${id_seq}/ejecutar`, {
+        method:"POST",
+        headers:{ "Content-Type":"application/json" },
+        body: JSON.stringify({ id_dispositivo, modo:"AUTOMATICO" })
+      });
+      alert("Secuencia lanzada.");
+    }catch(e){
+      alert("Error al iniciar: " + e.message);
+    }
+  }
+
+  // eventos
+  els.btnCrear.addEventListener("click", crearSecuencia);
+  els.btnCargar.addEventListener("click", cargarPasos);
+  els.btnAgregarPaso.addEventListener("click", agregarPaso);
+  els.btnIniciar.addEventListener("click", iniciarSecuencia);
+
+  // inicio
+  cargarSecuencias();
+</script>
+</body>
+</html>
