@@ -1,25 +1,123 @@
-/* ===== TEMA DEMOS (rojo suave) ===== */
-.demos{
-  --bg:#0b0f14; --panel:#0f1420; --ring:#263043; --text:#f7ecec; --muted:#d9caca;
-  --brand:#ff4d4d; --ok:#48e0a4; --shadow:0 18px 50px rgba(0,0,0,.45);
-  min-height:100dvh; margin:0;
-  font:600 16px/1.45 Inter,system-ui,Segoe UI,Roboto,Arial; color:var(--text);
+/* ===========================
+   Carrito IoT – Demos (Red)
+   Estilos independientes
+   =========================== */
+:root{
+  --bg-0:#07090F;
+  --bg-1:#0C111E;
+  --panel:#0F1729;
+  --card:#0F1A2B;
+
+  --text:#F3F5F7;
+  --muted:#C2C7D0;
+
+  --brand:#EF4444;     /* rojo principal */
+  --brand-700:#B91C1C;
+  --brand-800:#991B1B;
+
+  --ok:#10B981;
+  --warn:#F59E0B;
+  --err:#F43F5E;
+
+  --ring:#25324A;
+  --shadow:0 18px 48px rgba(0,0,0,.35);
+}
+
+*{box-sizing:border-box}
+html,body{height:100%}
+body.theme-red{
+  margin:0;
+  font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial;
+  color:var(--text);
   background:
-    radial-gradient(1000px 600px at 50% -15%, rgba(255,77,77,.12), transparent 60%),
-    linear-gradient(180deg,#0a0d12,var(--bg));
+    radial-gradient(1100px 650px at 50% -20%, rgba(185,28,28,.28) 0%, transparent 60%),
+    radial-gradient(900px 520px at 8% 120%, rgba(153,27,27,.18) 0%, transparent 60%),
+    linear-gradient(180deg,var(--bg-1),var(--bg-0));
 }
-.container{ max-width:1100px; margin:0 auto; padding:28px 16px 90px; }
-h1{ margin:28px 0 18px; font-size:clamp(28px,3.2vw,56px); }
-.panel{ margin-top:10px; padding:16px; border-radius:16px; border:1px solid var(--ring);
-  background:linear-gradient(180deg,#0e121a,var(--panel)); box-shadow:var(--shadow); }
-.controls{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:10px; }
-input, select, button{
-  padding:10px 12px; border-radius:10px; border:1px solid var(--ring); background:#0f1420; color:var(--text);
+
+/* Topbar */
+.topbar{
+  display:flex;align-items:center;gap:18px;
+  padding:14px 18px;border-bottom:1px solid var(--ring);
+  background:linear-gradient(180deg,#0B0E15,#0A0D13);
+  position:sticky;top:0;z-index:20;
 }
-button.primary{ background: color-mix(in srgb, var(--brand) 55%, #0f1420); border-color: color-mix(in srgb, var(--brand) 45%, var(--ring)); }
-.grid{ display:grid; grid-template-columns: repeat(2, 1fr); gap:14px; }
-@media (max-width:720px){ .grid{ grid-template-columns:1fr; } }
-.list{ display:grid; gap:10px; }
-.item{ padding:10px 12px; border:1px solid var(--ring); border-radius:12px; background:#111728; }
-.footer{ position:sticky; bottom:0; padding:14px 16px; border-top:1px solid var(--ring);
-  background:linear-gradient(180deg,#0b1017,#090d16); display:flex; justify-content:center; color:var(--muted); }
+.brand{font-weight:800;letter-spacing:.03em}
+.nav{margin-left:auto;display:flex;gap:10px;flex-wrap:wrap}
+.chip{
+  display:inline-flex;align-items:center;gap:10px;
+  padding:10px 14px;border-radius:14px;
+  border:1px solid var(--ring);text-decoration:none;color:var(--text);
+  background:linear-gradient(180deg,#0D1523,#0B111D);
+  font-weight:600;
+}
+.chip--active{outline:2px solid rgba(239,68,68,.5)}
+.chip.hint{opacity:.9}
+.chip.success{background:rgba(16,185,129,.12); border-color:#145A4B}
+.chip.danger{background:rgba(244,63,94,.12); border-color:#7F1D1D;}
+
+/* Layout */
+.container{max-width:1100px;margin:0 auto;padding:28px 16px 90px}
+.page-title{
+  text-align:center;margin:8px 0 22px;
+  font-size:clamp(28px,2.1vw + 1rem,40px);
+  font-weight:900;letter-spacing:.04em;
+  text-shadow:0 10px 30px rgba(0,0,0,.45);
+}
+.hud{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+
+/* Cards */
+.card{
+  background:linear-gradient(180deg,var(--panel),#0B1322);
+  border:1px solid var(--ring);
+  border-radius:18px; padding:18px; box-shadow:var(--shadow);
+  margin-bottom:18px;
+}
+.card-title{margin:0 0 12px 2px; font-weight:800}
+
+/* Forms */
+.input, select{
+  background:#0E1730; color:var(--text);
+  border:1px solid var(--ring); border-radius:12px;
+  padding:11px 12px; width:100%;
+}
+label{display:block;margin:0 0 6px 2px;color:#E9EDF5;font-size:.92rem}
+
+.btn{
+  display:inline-flex;align-items:center;gap:10px;
+  padding:10px 14px;border-radius:12px;
+  border:1px solid var(--ring); background:#0E1730; color:var(--text);
+  cursor:pointer; user-select:none; font-weight:600;
+}
+.btn.primary{background:linear-gradient(180deg,#1B0B0C,#3A0D12); border-color:#571019}
+.btn.primary:hover{background:linear-gradient(180deg,#2A0E12,#4A0F16)}
+.btn.danger{background:linear-gradient(180deg,#2A0E12,#4A0F16); border-color:#6C1120}
+.btn.ghost{background:#0E1626}
+
+.row{display:flex;gap:12px;align-items:center}
+.wrap{flex-wrap:wrap}
+.gap{gap:12px}
+.grow{flex:1}
+
+.grid{display:grid;gap:12px}
+.g3{grid-template-columns:repeat(3, minmax(0,1fr))}
+@media (max-width:900px){ .g3{grid-template-columns:1fr 1fr} }
+@media (max-width:600px){ .g3{grid-template-columns:1fr} }
+
+/* Listado de pasos */
+.list{display:grid;gap:10px}
+.item{
+  display:flex;justify-content:space-between;align-items:center;
+  background:linear-gradient(180deg,#0C1527,#0A1220);
+  border:1px solid var(--ring); border-radius:14px; padding:12px 14px;
+}
+.item .meta{opacity:.85}
+
+/* Footer */
+.footer{
+  position:sticky; bottom:0; width:100%;
+  display:flex; justify-content:center; padding:12px 14px;
+  background:linear-gradient(180deg,#0B101A,#090D14);
+  border-top:1px solid var(--ring);
+}
+.muted{color:var(--muted)}
