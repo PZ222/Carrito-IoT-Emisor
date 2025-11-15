@@ -12,10 +12,18 @@
   <header class="topbar">
     <div class="brand">Carrito IoT - Control</div>
     <nav class="nav">
-      <a class="pill active" href="https://pz222.github.io/Carrito-IoT-Emisor/index.html"><span class="ico">🎮</span> Emisor</a>
-      <a class="pill" href="https://pz222.github.io/Carrito-IoT-Receptor/"><span class="ico">🦻</span> Receptor</a>
-      <a class="pill" href="https://pz222.github.io/Carrito-IoT-Emisor/obstaculos.html"><span class="ico">⚠️</span> Obstáculos</a>
-      <a class="pill" href="https://pz222.github.io/Carrito-IoT-Emisor/demos.html"><span class="ico">🧩</span> Demos</a>
+      <a class="pill active" href="https://pz222.github.io/Carrito-IoT-Emisor/index.html">
+        <span class="ico">🎮</span> Emisor
+      </a>
+      <a class="pill" href="https://pz222.github.io/Carrito-IoT-Receptor/">
+        <span class="ico">🦻</span> Receptor
+      </a>
+      <a class="pill" href="https://pz222.github.io/Carrito-IoT-Emisor/obstaculos.html">
+        <span class="ico">⚠️</span> Obstáculos
+      </a>
+      <a class="pill" href="https://pz222.github.io/Carrito-IoT-Emisor/demos.html">
+        <span class="ico">🧩</span> Demos
+      </a>
     </nav>
   </header>
 
@@ -27,27 +35,49 @@
 
     <section class="panel">
       <div class="controls">
-        <label for="deviceId">Dispositivo:</label>
-        <input id="deviceId" type="number" min="1" value="1" />
+        <label>Dispositivo:</label>
+        <input id="deviceId" type="number" min="1" value="1">
       </div>
 
-      <div class="grid" id="tilesGrid" aria-label="Controles de movimiento">
-        <!-- Fila 1 -->
-        <div class="tile" data-cmd="ADELANTE" aria-label="Adelante"><i>↑</i><span>Adelante</span></div>
-        <div class="tile" data-cmd="VUELTA_ADELANTE_IZQUIERDA" aria-label="Vuelta Adelante Izquierda"><i>↖</i><span>Vta Adel Izq</span></div>
-        <div class="tile" data-cmd="VUELTA_ADELANTE_DERECHA" aria-label="Vuelta Adelante Derecha"><i>↗</i><span>Vta Adel Der</span></div>
-        <div class="tile" data-cmd="ATRAS" aria-label="Atrás"><i>↓</i><span>Atrás</span></div>
+      <div class="grid" id="tilesGrid">
+        <!-- Fila 1: adelante / curvas adelante / atrás -->
+        <div class="tile" data-cmd="ADELANTE">
+          <i>↑</i><span>Adelante</span>
+        </div>
+        <div class="tile" data-cmd="VUELTA_ADELANTE_IZQUIERDA">
+          <i>↖</i><span>Vta Adel Izq</span>
+        </div>
+        <div class="tile" data-cmd="VUELTA_ADELANTE_DERECHA">
+          <i>↗</i><span>Vta Adel Der</span>
+        </div>
+        <div class="tile" data-cmd="ATRAS">
+          <i>↓</i><span>Atrás</span>
+        </div>
 
-        <!-- Fila 2 (nuevos + detener) -->
-        <div class="tile" data-cmd="VUELTA_ATRAS_IZQUIERDA" aria-label="Vuelta Atrás Izquierda"><i>↙</i><span>Vta Atrás Izq</span></div>
-        <div class="tile" data-cmd="VUELTA_ATRAS_DERECHA" aria-label="Vuelta Atrás Derecha"><i>↘</i><span>Vta Atrás Der</span></div>
-        <div class="tile" data-cmd="DETENER" aria-label="Detener"><i>⏹</i><span>Detener</span></div>
+        <!-- Fila 2: curvas atrás + detener -->
+        <div class="tile" data-cmd="VUELTA_ATRAS_IZQUIERDA">
+          <i>↙</i><span>Vta Atrás Izq</span>
+        </div>
+        <div class="tile" data-cmd="VUELTA_ATRAS_DERECHA">
+          <i>↘</i><span>Vta Atrás Der</span>
+        </div>
+        <div class="tile" data-cmd="DETENER">
+          <i>■</i><span>Detener</span>
+        </div>
 
-        <!-- Fila 3 (giros) -->
-        <div class="tile" data-cmd="GIRO_90_IZQUIERDA" aria-label="Giro 90 Izquierda"><i>↺</i><span>Giro 90° Izq</span></div>
-        <div class="tile" data-cmd="GIRO_90_DERECHA" aria-label="Giro 90 Derecha"><i>↻</i><span>Giro 90° Der</span></div>
-        <div class="tile" data-cmd="GIRO_360_IZQUIERDA" aria-label="Giro 360 Izquierda"><i>↺</i><span>Giro 360° Izq</span></div>
-        <div class="tile" data-cmd="GIRO_360_DERECHA" aria-label="Giro 360 Derecha"><i>↻</i><span>Giro 360° Der</span></div>
+        <!-- Fila 3: giros -->
+        <div class="tile" data-cmd="GIRO_90_IZQUIERDA">
+          <i>↺</i><span>Giro 90° Izq</span>
+        </div>
+        <div class="tile" data-cmd="GIRO_90_DERECHA">
+          <i>↻</i><span>Giro 90° Der</span>
+        </div>
+        <div class="tile" data-cmd="GIRO_360_IZQUIERDA">
+          <i>⟲</i><span>Giro 360° Izq</span>
+        </div>
+        <div class="tile" data-cmd="GIRO_360_DERECHA">
+          <i>⟳</i><span>Giro 360° Der</span>
+        </div>
       </div>
     </section>
 
