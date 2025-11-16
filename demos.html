@@ -8,8 +8,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
   <link rel="stylesheet" href="./demos.css">
-    <link rel="stylesheet" href="styles.navbar.css">
-
+  <link rel="stylesheet" href="styles.navbar.css">
 </head>
 <body class="obstaculos">
   <header class="topbar">
@@ -71,7 +70,6 @@
       <div class="grid-4 mt-10">
         <div>
           <label>Movimiento (catálogo):</label>
-          <!-- Sugerencia: rellena con tus id_mov reales; para prueba dejo 1..11 como clave_modelo -->
           <select id="selModelo" class="input">
             <option value="1" data-clave-modelo="1">ADELANTE (1)</option>
             <option value="2" data-clave-modelo="2">ATRÁS (2)</option>
@@ -93,6 +91,10 @@
         <div>
           <label>Duración (ms):</label>
           <input id="inputDur" type="number" class="input" value="1000" min="0">
+        </div>
+        <div>
+          <label>Velocidad (0–255):</label>
+          <input id="inputVel" type="number" class="input" value="200" min="0" max="255">
         </div>
         <div class="self-end">
           <button id="btnAgregarPaso" class="btn">Agregar paso</button>

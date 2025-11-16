@@ -10,6 +10,7 @@ const btnCargar      = document.getElementById("btnCargar");
 const selModelo      = document.getElementById("selModelo");
 const inputOrden     = document.getElementById("inputOrden");
 const inputDur       = document.getElementById("inputDur");
+const inputVel       = document.getElementById("inputVel");   // <--- NUEVO
 const btnAgregarPaso = document.getElementById("btnAgregarPaso");
 const btnIniciar     = document.getElementById("btnIniciar");
 const inputDisp      = document.getElementById("inputDisp");
@@ -29,8 +30,8 @@ function setBadge(el, txt, ok = true) {
   el.textContent = txt;
   el.className = "chip " + (ok ? "ok" : "err");
 }
+
 async function fetchJson(url, opts) {
-  // opts con CORS explícito y no-cache para evitar 304 en local
   const r = await fetch(url, { mode: "cors", cache: "no-store", ...opts });
   if (!r.ok) {
     let detail = "";
@@ -57,11 +58,29 @@ async function cargarSecuencias() {
 
 async function cargarPasos() {
   const id = Number(selSecuencias.value);
-  if (!id) { listaPasos.innerHTML = `<div class="item empty">Sin secuencia</div>`; return; }
+  if (!id) {
+    listaPasos.innerHTML = `<div class="item empty">Sin secuencia</div>`;
+    return;
+  }
   const pasos = await fetchJson(`${API}/secuencias/${id}/pasos`);
-  listaPasos.innerHTML = pasos.map(p =>
-    `<div class="item">#${p.orden} • ${p.mov_desc} (id_mov:${p.id_mov}) • ${p.dur_ms} ms</div>`
-  ).join("") || `<div class="item empty">Sin pasos</div>`;
+
+  listaPasos.innerHTML = (pasos || []).map(p => {
+    // extraer velocidad de parametros_json
+    let vel = "—";
+    if (p.parametros_json) {
+      try {
+        const pj = (typeof p.parametros_json === "string")
+          ? JSON.parse(p.parametros_json)
+          : p.parametros_json;
+        if (pj && pj.velocidad != null) vel = pj.velocidad;
+      } catch {/* ignore */}
+    }
+
+    return `<div class="item">
+      <div>#${p.orden} • ${p.mov_desc} (id_mov:${p.id_mov})</div>
+      <div class="meta">${p.dur_ms} ms • vel: ${vel}</div>
+    </div>`;
+  }).join("") || `<div class="item empty">Sin pasos</div>`;
 }
 
 // ===== acciones
@@ -71,15 +90,14 @@ btnCrearSeq?.addEventListener("click", async () => {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        nombre: inputNombre.value || "DEMO_1",
-        descripcion: inputDesc.value || "",
-        autor: "ui",
-        es_evasion: false
+        nombre:      inputNombre.value || "DEMO_1",
+        descripcion: inputDesc.value   || "",
+        autor:       "ui",
+        es_evasion:  false
       })
     });
     setBadge(badgeCrear, "Secuencia OK", true);
-    const rows = await cargarSecuencias();
-    // seleccionar la nueva por id
+    await cargarSecuencias();
     if (res?.id) selSecuencias.value = String(res.id);
     await cargarPasos();
   } catch (e) {
@@ -94,7 +112,8 @@ btnAgregarPaso?.addEventListener("click", async () => {
   try {
     const seqId = Number(selSecuencias.value);
     const orden = Number(inputOrden.value || 1);
-    const dur   = Number(inputDur.value || 1000);
+    const dur   = Number(inputDur.value   || 1000);
+    const vel   = Number(inputVel.value   || 200);   // <--- NUEVO
 
     // Opción 1: enviar id_mov si ya conoces el real en tu catálogo
     const id_mov = Number(selModelo.value);
@@ -102,7 +121,12 @@ btnAgregarPaso?.addEventListener("click", async () => {
     await fetchJson(`${API}/secuencias/${seqId}/pasos`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id_mov, orden, dur_ms: dur })
+      body: JSON.stringify({
+        id_mov,
+        orden,
+        dur_ms: dur,
+        velocidad: vel       // <--- NUEVO
+      })
     });
     await cargarPasos();
   } catch (e) {
@@ -115,7 +139,10 @@ btnIniciar?.addEventListener("click", async () => {
   try {
     const seqId = Number(selSecuencias.value);
     const disp  = Number(inputDisp.value || 1);
-    const data  = await fetchJson(`${API}/secuencias/${seqId}/ejecutar?id_dispositivo=${disp}`, { method: "POST" });
+    const data  = await fetchJson(
+      `${API}/secuencias/${seqId}/ejecutar?id_dispositivo=${disp}`,
+      { method: "POST" }
+    );
     alert(`Secuencia en marcha: ${data.inserted} pasos insertados`);
   } catch (e) {
     console.error(e);
@@ -126,9 +153,9 @@ btnIniciar?.addEventListener("click", async () => {
 // ===== boot
 (async () => {
   try {
-    await pingHealth();                // 1) /health con mensaje claro
-    await cargarSecuencias();          // 2) lista
-    await cargarPasos();               // 3) pasos primera
+    await pingHealth();
+    await cargarSecuencias();
+    await cargarPasos();
   } catch (e) {
     console.error(e);
     setBadge(badgeAPI, "Error al cargar: " + e.message, false);
