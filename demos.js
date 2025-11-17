@@ -10,7 +10,7 @@ const btnCargar      = document.getElementById("btnCargar");
 const selModelo      = document.getElementById("selModelo");
 const inputOrden     = document.getElementById("inputOrden");
 const inputDur       = document.getElementById("inputDur");
-const inputVel       = document.getElementById("inputVel");   // <--- NUEVO
+const inputVel       = document.getElementById("inputVel");
 const btnAgregarPaso = document.getElementById("btnAgregarPaso");
 const btnIniciar     = document.getElementById("btnIniciar");
 const inputDisp      = document.getElementById("inputDisp");
@@ -22,7 +22,7 @@ const badgeCrear     = document.getElementById("badgeCrear");
 
 const listaPasos     = document.getElementById("listaPasos");
 
-apiUrlLab.textContent = API;
+if (apiUrlLab) apiUrlLab.textContent = API;
 
 // ===== util
 function setBadge(el, txt, ok = true) {
@@ -63,23 +63,13 @@ async function cargarPasos() {
     return;
   }
   const pasos = await fetchJson(`${API}/secuencias/${id}/pasos`);
-
-  listaPasos.innerHTML = (pasos || []).map(p => {
-    // extraer velocidad de parametros_json
-    let vel = "—";
-    if (p.parametros_json) {
-      try {
-        const pj = (typeof p.parametros_json === "string")
-          ? JSON.parse(p.parametros_json)
-          : p.parametros_json;
-        if (pj && pj.velocidad != null) vel = pj.velocidad;
-      } catch {/* ignore */}
+  listaPasos.innerHTML = pasos.map(p => {
+    let velTxt = "";
+    if (p.parametros_json && typeof p.parametros_json === "object") {
+      const v = p.parametros_json.velocidad;
+      if (typeof v === "number") velTxt = ` • vel:${v}`;
     }
-
-    return `<div class="item">
-      <div>#${p.orden} • ${p.mov_desc} (id_mov:${p.id_mov})</div>
-      <div class="meta">${p.dur_ms} ms • vel: ${vel}</div>
-    </div>`;
+    return `<div class="item">#${p.orden} • ${p.mov_desc} (id_mov:${p.id_mov}) • ${p.dur_ms} ms${velTxt}</div>`;
   }).join("") || `<div class="item empty">Sin pasos</div>`;
 }
 
@@ -90,14 +80,14 @@ btnCrearSeq?.addEventListener("click", async () => {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        nombre:      inputNombre.value || "DEMO_1",
-        descripcion: inputDesc.value   || "",
-        autor:       "ui",
-        es_evasion:  false
+        nombre: inputNombre.value || "DEMO_1",
+        descripcion: inputDesc.value || "",
+        autor: "ui",
+        es_evasion: false
       })
     });
     setBadge(badgeCrear, "Secuencia OK", true);
-    await cargarSecuencias();
+    const rows = await cargarSecuencias();
     if (res?.id) selSecuencias.value = String(res.id);
     await cargarPasos();
   } catch (e) {
@@ -112,21 +102,19 @@ btnAgregarPaso?.addEventListener("click", async () => {
   try {
     const seqId = Number(selSecuencias.value);
     const orden = Number(inputOrden.value || 1);
-    const dur   = Number(inputDur.value   || 1000);
-    const vel   = Number(inputVel.value   || 200);   // <--- NUEVO
-
-    // Opción 1: enviar id_mov si ya conoces el real en tu catálogo
+    const dur   = Number(inputDur.value || 1000);
     const id_mov = Number(selModelo.value);
+    const vel   = Number(inputVel.value || 0);
+
+    const payload = { id_mov, orden, dur_ms: dur };
+    if (Number.isFinite(vel) && vel > 0) {
+      payload.velocidad = vel;  // esto llega al back y se guarda en parametros_json
+    }
 
     await fetchJson(`${API}/secuencias/${seqId}/pasos`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        id_mov,
-        orden,
-        dur_ms: dur,
-        velocidad: vel       // <--- NUEVO
-      })
+      body: JSON.stringify(payload)
     });
     await cargarPasos();
   } catch (e) {
@@ -139,10 +127,7 @@ btnIniciar?.addEventListener("click", async () => {
   try {
     const seqId = Number(selSecuencias.value);
     const disp  = Number(inputDisp.value || 1);
-    const data  = await fetchJson(
-      `${API}/secuencias/${seqId}/ejecutar?id_dispositivo=${disp}`,
-      { method: "POST" }
-    );
+    const data  = await fetchJson(`${API}/secuencias/${seqId}/ejecutar?id_dispositivo=${disp}`, { method: "POST" });
     alert(`Secuencia en marcha: ${data.inserted} pasos insertados`);
   } catch (e) {
     console.error(e);

@@ -7,10 +7,13 @@
 
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+  
   <link rel="stylesheet" href="./demos.css">
   <link rel="stylesheet" href="styles.navbar.css">
+
 </head>
 <body class="obstaculos">
+  <!-- NAVBAR -->
   <header class="topbar">
     <div class="brand">Carrito IoT</div>
     <nav class="nav">
@@ -47,6 +50,7 @@
           <input id="inputDesc" class="input" value="Secuencia simple">
         </div>
       </div>
+
       <div class="mt-10">
         <button id="btnCrearSeq" class="btn primary">Crear secuencia</button>
         <span id="badgeCrear" class="chip">—</span>
@@ -57,6 +61,7 @@
     <section class="card">
       <div class="card-title">Agregar paso / Ejecutar</div>
 
+      <!-- Selector de secuencia -->
       <div class="grid-4">
         <div>
           <label>Secuencia:</label>
@@ -67,55 +72,64 @@
         </div>
       </div>
 
+      <!-- Agregar paso -->
       <div class="grid-4 mt-10">
         <div>
           <label>Movimiento (catálogo):</label>
           <select id="selModelo" class="input">
-            <option value="1" data-clave-modelo="1">ADELANTE (1)</option>
-            <option value="2" data-clave-modelo="2">ATRÁS (2)</option>
-            <option value="3" data-clave-modelo="3">DETENER (3)</option>
-            <option value="4" data-clave-modelo="4">Vta Adel Der (4)</option>
-            <option value="5" data-clave-modelo="5">Vta Adel Izq (5)</option>
-            <option value="6" data-clave-modelo="6">Vta Atr Der (6)</option>
-            <option value="7" data-clave-modelo="7">Vta Atr Izq (7)</option>
-            <option value="8" data-clave-modelo="8">Giro 90° Der (8)</option>
-            <option value="9" data-clave-modelo="9">Giro 90° Izq (9)</option>
-            <option value="10" data-clave-modelo="10">Giro 360° Der (10)</option>
-            <option value="11" data-clave-modelo="11">Giro 360° Izq (11)</option>
+            <option value="1">ADELANTE (1)</option>
+            <option value="2">ATRÁS (2)</option>
+            <option value="3">DETENER (3)</option>
+            <option value="4">Vta Adel Der (4)</option>
+            <option value="5">Vta Adel Izq (5)</option>
+            <option value="6">Vta Atr Der (6)</option>
+            <option value="7">Vta Atr Izq (7)</option>
+            <option value="8">Giro 90° Der (8)</option>
+            <option value="9">Giro 90° Izq (9)</option>
+            <option value="10">Giro 360° Der (10)</option>
+            <option value="11">Giro 360° Izq (11)</option>
           </select>
         </div>
+
         <div>
           <label>Orden:</label>
-          <input id="inputOrden" type="number" class="input" value="1" min="1">
+          <input id="inputOrden" type="number" class="input" min="1" value="1">
         </div>
+
         <div>
           <label>Duración (ms):</label>
-          <input id="inputDur" type="number" class="input" value="1000" min="0">
+          <input id="inputDur" type="number" class="input" min="0" value="1000">
         </div>
+
         <div>
           <label>Velocidad (0–255):</label>
-          <input id="inputVel" type="number" class="input" value="200" min="0" max="255">
+          <input id="inputVel" type="number" class="input" min="0" max="255" value="150">
         </div>
-        <div class="self-end">
+
+        <div class="self-end" style="margin-top: 8px;">
           <button id="btnAgregarPaso" class="btn">Agregar paso</button>
         </div>
       </div>
 
+      <!-- Botón iniciar -->
       <div class="mt-16">
         <button id="btnIniciar" class="btn primary">Iniciar secuencia</button>
       </div>
 
+      <!-- Lista -->
       <div class="mt-16">
         <div class="section-title">Pasos</div>
         <div id="listaPasos" class="list"></div>
       </div>
     </section>
 
+    <!-- Pie -->
     <footer class="footer">
       <div class="chip muted">© Rafael • Carrito IoT</div>
     </footer>
   </main>
 
+  <!-- JS -->
   <script src="./demos.js"></script>
 </body>
 </html>
