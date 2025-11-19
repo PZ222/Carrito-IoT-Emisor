@@ -25,7 +25,11 @@
 
 *{box-sizing:border-box}
 html,body{height:100%}
-body.theme-red{
+
+/* CORRECCIÓN IMPORTANTE:
+   Que el fondo oscuro aplique tanto en theme-red como en obstaculos */
+body.theme-red,
+body.obstaculos{
   margin:0;
   font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial;
   color:var(--text);
