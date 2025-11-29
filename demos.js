@@ -7,6 +7,7 @@ const badgeAPI    = document.getElementById("badgeAPI");
 
 const selSecuencias  = document.getElementById("selSecuencias");
 const btnCargar      = document.getElementById("btnCargar");
+
 const selModelo      = document.getElementById("selModelo");
 const inputOrden     = document.getElementById("inputOrden");
 const inputDur       = document.getElementById("inputDur");
@@ -21,9 +22,12 @@ const btnCrearSeq    = document.getElementById("btnCrearSeq");
 const badgeCrear     = document.getElementById("badgeCrear");
 
 const listaPasos     = document.getElementById("listaPasos");
-const descSecEl      = document.getElementById("descripcionSecuencia");
+const seqDesc        = document.getElementById("seqDesc");  // cuadro de descripción
 
-apiUrlLab.textContent = API;
+// cache de secuencias para poder mostrar descripción
+let secuenciasCache = [];
+
+if (apiUrlLab) apiUrlLab.textContent = API;
 
 // ===== util
 function setBadge(el, txt, ok = true) {
@@ -36,104 +40,122 @@ async function fetchJson(url, opts) {
   const r = await fetch(url, { mode: "cors", cache: "no-store", ...opts });
   if (!r.ok) {
     let detail = "";
-    try { detail = await r.text(); } catch {}
+    try { detail = await r.text(); } catch { /* ignore */ }
     throw new Error(`${r.status} ${r.statusText}${detail ? " – " + detail : ""}`);
   }
   try { return await r.json(); } catch { return null; }
 }
 
-// ==================== HEALTH ====================
+// ===== descripción de la secuencia seleccionada
+function actualizarDescripcionSeleccionada() {
+  if (!seqDesc || !selSecuencias) return;
+
+  const idSel = Number(selSecuencias.value || 0);
+  const row   = secuenciasCache.find(r => Number(r.id_seq) === idSel);
+
+  if (row) {
+    seqDesc.textContent = row.descripcion || "(Sin descripción registrada)";
+  } else {
+    seqDesc.textContent = "Selecciona una secuencia y pulsa Cargar para ver su descripción.";
+  }
+}
+
+// ===== habilitar/deshabilitar duración / velocidad según movimiento
+function updateVelDurState() {
+  if (!selModelo || !inputDur || !inputVel) return;
+
+  const idMov = Number(selModelo.value || 0);
+  const esGiro = (idMov === 8 || idMov === 9 || idMov === 10 || idMov === 11);
+
+  if (esGiro) {
+    // usar valores fijos, solo lectura
+    inputDur.value     = 0;               // el Arduino usa sus T_GIRO_90 / T_GIRO_360
+    inputDur.readOnly  = true;
+    inputDur.classList.add("readonly");
+
+    inputVel.value     = 0;               // el Arduino usa defaultSpeed
+    inputVel.readOnly  = true;
+    inputVel.placeholder = "Usa velocidad fija";
+    inputVel.classList.add("readonly");
+  } else {
+    inputDur.readOnly  = false;
+    inputVel.readOnly  = false;
+    inputDur.classList.remove("readonly");
+    inputVel.classList.remove("readonly");
+
+    if (!inputDur.value) inputDur.value = 1000;
+    if (!inputVel.value) inputVel.value = 150;
+    inputVel.placeholder = "0–255";
+  }
+}
+
+// ===== carga base
 async function pingHealth() {
   const data = await fetchJson(`${API}/health`);
   if (!data?.ok) throw new Error("Health NOK");
   setBadge(badgeAPI, "API OK", true);
 }
 
-// ==================== SECUENCIAS ====================
 async function cargarSecuencias() {
   const rows = await fetchJson(`${API}/secuencias`);
-  selSecuencias.innerHTML = rows.map(r =>
-    `<option value="${r.id_seq}" data-desc="${r.descripcion || ''}">
-       ${r.nombre} (id:${r.id_seq})
-     </option>`
-  ).join("");
-  return rows;
-}
+  secuenciasCache = Array.isArray(rows) ? rows : [];
 
-// Mostrar descripción
-function mostrarDescripcion() {
-  const opt = selSecuencias.selectedOptions[0];
-  if (!opt) {
-    descSecEl.textContent = "Selecciona una secuencia y pulsa Cargar para ver su descripción.";
-    return;
+  if (selSecuencias) {
+    selSecuencias.innerHTML = secuenciasCache.map(r =>
+      `<option value="${r.id_seq}">${r.nombre} (id:${r.id_seq})</option>`
+    ).join("");
   }
-  const text = opt.dataset.desc || "Sin descripción";
-  descSecEl.textContent = text;
+
+  // mensaje por defecto en el cuadro
+  if (seqDesc) {
+    seqDesc.textContent = "Selecciona una secuencia y pulsa Cargar para ver su descripción.";
+  }
+
+  return secuenciasCache;
 }
 
-// ==================== PASOS ====================
 async function cargarPasos() {
+  if (!selSecuencias || !listaPasos) return;
+
   const id = Number(selSecuencias.value);
   if (!id) {
     listaPasos.innerHTML = `<div class="item empty">Sin secuencia</div>`;
+    if (seqDesc) {
+      seqDesc.textContent = "Selecciona una secuencia y pulsa Cargar para ver su descripción.";
+    }
     return;
   }
 
-  mostrarDescripcion();
-
   const pasos = await fetchJson(`${API}/secuencias/${id}/pasos`);
-  listaPasos.innerHTML =
-    pasos.map(p =>
-      `<div class="item">#${p.orden} • ${p.mov_desc} (id_mov:${p.id_mov}) • ${p.dur_ms} ms</div>`
-    ).join("") || `<div class="item empty">Sin pasos</div>`;
+
+  listaPasos.innerHTML = (pasos || []).map(p =>
+    `<div class="item">
+       <div>#${p.orden} • ${p.mov_desc} (id_mov:${p.id_mov})</div>
+       <div class="meta">${p.dur_ms} ms</div>
+     </div>`
+  ).join("") || `<div class="item empty">Sin pasos</div>`;
 }
 
-// ==================== BLOQUEO DE CAMPOS ====================
-function updateVelDurLock() {
-  const mov = Number(selModelo.value);
-  const isFixed = (mov >= 8 && mov <= 11); // giros fijos
-
-  if (isFixed) {
-    // ---- DURACIÓN ----
-    inputDur.value = "";
-    inputDur.placeholder = "Tiempo fijo";
-    inputDur.disabled = true;
-
-    // ---- VELOCIDAD ----
-    inputVel.value = "";
-    inputVel.placeholder = "Usa velocidad fija";
-    inputVel.disabled = true;
-  } else {
-    // Restaurar controles
-    inputDur.disabled = false;
-    inputDur.placeholder = "Duración en ms";
-    if (!inputDur.value) inputDur.value = "1000";
-
-    inputVel.disabled = false;
-    inputVel.placeholder = "0–255";
-    if (!inputVel.value) inputVel.value = "150";
-  }
-}
-
-// ==================== CREAR SECUENCIA ====================
+// ===== acciones
 btnCrearSeq?.addEventListener("click", async () => {
   try {
     const res = await fetchJson(`${API}/secuencias`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        nombre: inputNombre.value || "DEMO_1",
-        descripcion: inputDesc.value || "",
-        autor: "ui",
-        es_evasion: false
+        nombre:       inputNombre?.value || "DEMO_1",
+        descripcion:  inputDesc?.value   || "",
+        autor:        "ui",
+        es_evasion:   false
       })
     });
-
     setBadge(badgeCrear, "Secuencia OK", true);
 
     const rows = await cargarSecuencias();
-    if (res?.id) selSecuencias.value = String(res.id);
-
+    if (res?.id && selSecuencias) {
+      selSecuencias.value = String(res.id);
+    }
+    actualizarDescripcionSeleccionada();
     await cargarPasos();
   } catch (e) {
     console.error(e);
@@ -141,19 +163,30 @@ btnCrearSeq?.addEventListener("click", async () => {
   }
 });
 
-// ==================== AGREGAR PASO ====================
+btnCargar?.addEventListener("click", async () => {
+  try {
+    await cargarPasos();
+    actualizarDescripcionSeleccionada();
+  } catch (e) {
+    console.error(e);
+    setBadge(badgeAPI, "Error al cargar: " + e.message, false);
+  }
+});
+
+// si el usuario cambia la secuencia en el combo, actualizamos texto (aunque no cargue pasos aún)
+selSecuencias?.addEventListener("change", actualizarDescripcionSeleccionada);
+
+// cambio de movimiento -> bloquear/desbloquear duración/velocidad
+selModelo?.addEventListener("change", updateVelDurState);
+
 btnAgregarPaso?.addEventListener("click", async () => {
   try {
-    const seqId = Number(selSecuencias.value);
-    const orden = Number(inputOrden.value || 1);
-    const dur   = inputDur.disabled ? null : Number(inputDur.value || 1000);
-    const vel   = inputVel.disabled ? null : Number(inputVel.value || 150);
+    const seqId = Number(selSecuencias?.value);
+    const orden = Number(inputOrden?.value || 1);
+    const dur   = Number(inputDur?.value   || 1000);
+    const vel   = Number(inputVel?.value   || 0);   // 0 = usar default
 
-    const id_mov = Number(selModelo.value);
-
-    // parámetros JSON
-    const params = {};
-    if (vel !== null) params.velocidad = vel;
+    const id_mov = Number(selModelo?.value);
 
     await fetchJson(`${API}/secuencias/${seqId}/pasos`, {
       method: "POST",
@@ -161,11 +194,10 @@ btnAgregarPaso?.addEventListener("click", async () => {
       body: JSON.stringify({
         id_mov,
         orden,
-        dur_ms: dur ?? 0,
-        parametros_json: params
+        dur_ms: dur,
+        velocidad: vel      // el back lo guarda en parametros_json
       })
     });
-
     await cargarPasos();
   } catch (e) {
     console.error(e);
@@ -173,17 +205,13 @@ btnAgregarPaso?.addEventListener("click", async () => {
   }
 });
 
-// ==================== EJECUTAR SECUENCIA ====================
 btnIniciar?.addEventListener("click", async () => {
   try {
-    const seqId = Number(selSecuencias.value);
-    const disp  = Number(inputDisp.value || 1);
-
-    const data  = await fetchJson(
-      `${API}/secuencias/${seqId}/ejecutar?id_dispositivo=${disp}`,
-      { method: "POST" }
-    );
-
+    const seqId = Number(selSecuencias?.value);
+    const disp  = Number(inputDisp?.value || 1);
+    const data  = await fetchJson(`${API}/secuencias/${seqId}/ejecutar?id_dispositivo=${disp}`, {
+      method: "POST"
+    });
     alert(`Secuencia en marcha: ${data.inserted} pasos insertados`);
   } catch (e) {
     console.error(e);
@@ -191,18 +219,14 @@ btnIniciar?.addEventListener("click", async () => {
   }
 });
 
-// ==================== EVENTOS ====================
-selSecuencias?.addEventListener("change", mostrarDescripcion);
-selModelo?.addEventListener("change", updateVelDurLock);
-
-// ==================== ARRANQUE ====================
+// ===== boot
 (async () => {
   try {
     await pingHealth();
     await cargarSecuencias();
-    mostrarDescripcion();
+    actualizarDescripcionSeleccionada();
     await cargarPasos();
-    updateVelDurLock();
+    updateVelDurState();
   } catch (e) {
     console.error(e);
     setBadge(badgeAPI, "Error al cargar: " + e.message, false);
