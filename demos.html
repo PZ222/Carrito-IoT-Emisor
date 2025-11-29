@@ -11,16 +11,21 @@
   
   <link rel="stylesheet" href="./demos.css">
   <link rel="stylesheet" href="styles.navbar.css">
-
 </head>
 <body class="obstaculos">
   <!-- NAVBAR -->
   <header class="topbar">
     <div class="brand">Carrito IoT</div>
     <nav class="nav">
-      <a class="pill" href="https://pz222.github.io/Carrito-IoT-Emisor/index.html"><span class="ico">🎮</span> Control</a>
-      <a class="pill" href="https://pz222.github.io/Carrito-IoT-Receptor/"><span class="ico">🦻</span> Monitor</a>
-      <a class="pill active" href="https://pz222.github.io/Carrito-IoT-Emisor/demos.html"><span class="ico">🧩</span> Demos</a>
+      <a class="pill" href="https://pz222.github.io/Carrito-IoT-Emisor/index.html">
+        <span class="ico">🎮</span> Control
+      </a>
+      <a class="pill" href="https://pz222.github.io/Carrito-IoT-Receptor/">
+        <span class="ico">🦻</span> Monitor
+      </a>
+      <a class="pill active" href="https://pz222.github.io/Carrito-IoT-Emisor/demos.html">
+        <span class="ico">🧩</span> Demos
+      </a>
     </nav>
   </header>
 
@@ -62,13 +67,22 @@
       <div class="card-title">Agregar paso / Ejecutar</div>
 
       <!-- Selector de secuencia -->
-      <div class="grid-4">
-        <div>
+      <div class="grid-4 grid-cargar">
+        <div class="col1">
           <label>Secuencia:</label>
           <select id="selSecuencias" class="input"></select>
         </div>
-        <div class="self-end">
-          <button id="btnCargar" class="btn">Cargar</button>
+
+        <div class="col2">
+          <button id="btnCargar" class="btn btn-cargar">Cargar</button>
+        </div>
+      </div>
+
+      <!-- Descripción de la secuencia -->
+      <div class="mt-10">
+        <div class="section-title">Descripción de la secuencia</div>
+        <div id="seqDesc" class="desc-box">
+          Selecciona una secuencia y pulsa <strong>Cargar</strong> para ver su descripción.
         </div>
       </div>
 
