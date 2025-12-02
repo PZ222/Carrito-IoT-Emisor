@@ -8,82 +8,71 @@
   <link rel="stylesheet" href="styles.emisor.css">
   <link rel="stylesheet" href="styles.navbar.css">
 </head>
+
 <body class="emisor">
+
   <!-- NAVBAR -->
   <header class="topbar">
     <div class="brand">Carrito IoT - Control</div>
+
     <nav class="nav">
       <a class="pill active" href="https://pz222.github.io/Carrito-IoT-Emisor/index.html">
-        <span class="ico">🎮</span> Control
+        🎮 Control
       </a>
       <a class="pill" href="https://pz222.github.io/Carrito-IoT-Receptor/">
-        <span class="ico">🦻</span> Monitor
+        🦻 Monitor
       </a>
-
       <a class="pill" href="https://pz222.github.io/Carrito-IoT-Emisor/demos.html">
-        <span class="ico">🧩</span> Demos
+        🧩 Demos
       </a>
     </nav>
   </header>
 
   <main class="container">
-    <h1>CONTROL DE MOVIMIENTOS</h1>
+    <h1 class="page-title">CONTROL DE MOVIMIENTOS</h1>
 
     <div class="badge">API: <span id="apiUrl">http://3.225.81.202:5500</span></div>
     <div id="wsBadge" class="badge">WS: desconectado</div>
 
     <section class="panel">
+
       <div class="controls">
         <label>Dispositivo:</label>
         <input id="deviceId" type="number" min="1" value="1">
       </div>
 
-      <div class="grid" id="tilesGrid">
-        <!-- Fila 1: adelante / curvas adelante / atrás -->
-        <div class="tile" data-cmd="ADELANTE">
-          <i>↑</i><span>Adelante</span>
-        </div>
-        <div class="tile" data-cmd="VUELTA_ADELANTE_IZQUIERDA">
-          <i>↖</i><span>Vta Adel Izq</span>
-        </div>
-        <div class="tile" data-cmd="VUELTA_ADELANTE_DERECHA">
-          <i>↗</i><span>Vta Adel Der</span>
-        </div>
-        <div class="tile" data-cmd="ATRAS">
-          <i>↓</i><span>Atrás</span>
-        </div>
+      <!-- GRID 4–4–3 -->
+      <div class="pad-grid">
 
-        <!-- Fila 2: curvas atrás + detener -->
-        <div class="tile" data-cmd="VUELTA_ATRAS_IZQUIERDA">
-          <i>↙</i><span>Vta Atrás Izq</span>
-        </div>
-        <div class="tile" data-cmd="VUELTA_ATRAS_DERECHA">
-          <i>↘</i><span>Vta Atrás Der</span>
-        </div>
-        <div class="tile" data-cmd="DETENER">
-          <i>■</i><span>Detener</span>
-        </div>
+        <!-- 4 ARRIBA -->
+        <div class="tile" data-cmd="ADELANTE"><i>↑</i><span>Adelante</span></div>
+        <div class="tile" data-cmd="VUELTA_ADELANTE_IZQUIERDA"><i>↖</i><span>Vta Adel Izq</span></div>
+        <div class="tile" data-cmd="VUELTA_ADELANTE_DERECHA"><i>↗</i><span>Vta Adel Der</span></div>
+        <div class="tile" data-cmd="ATRAS"><i>↓</i><span>Atrás</span></div>
 
-        <!-- Fila 3: giros -->
-        <div class="tile" data-cmd="GIRO_90_IZQUIERDA">
-          <i>↺</i><span>Giro 90° Izq</span>
-        </div>
-        <div class="tile" data-cmd="GIRO_90_DERECHA">
-          <i>↻</i><span>Giro 90° Der</span>
-        </div>
-        <div class="tile" data-cmd="GIRO_360_IZQUIERDA">
-          <i>⟲</i><span>Giro 360° Izq</span>
-        </div>
-        <div class="tile" data-cmd="GIRO_360_DERECHA">
-          <i>⟳</i><span>Giro 360° Der</span>
-        </div>
+        <!-- 4 MEDIO -->
+        <div class="tile" data-cmd="VUELTA_ATRAS_IZQUIERDA"><i>↙</i><span>Vta Atr Izq</span></div>
+        <div class="tile" data-cmd="DETENER"><i>■</i><span>Detener</span></div>
+        <div class="tile" data-cmd="VUELTA_ATRAS_DERECHA"><i>↘</i><span>Vta Atr Der</span></div>
+        <div class="tile" data-cmd="GIRO_90_IZQUIERDA"><i>↺</i><span>Giro 90° Izq</span></div>
+
+        <!-- 3 ABAJO -->
+        <div class="tile" data-cmd="GIRO_90_DERECHA"><i>↻</i><span>Giro 90° Der</span></div>
+        <div class="tile" data-cmd="GIRO_360_IZQUIERDA"><i>⟲</i><span>Giro 360° Izq</span></div>
+        <div class="tile" data-cmd="GIRO_360_DERECHA"><i>⟳</i><span>Giro 360° Der</span></div>
+
+        <!-- HUECO PARA CENTRAR -->
+        <div class="tile empty"></div>
+
       </div>
     </section>
 
     <p id="statusText">Listo</p>
+
   </main>
 
   <footer class="footer">© Rafael • Carrito IoT</footer>
+
   <script src="app.js"></script>
 </body>
 </html>

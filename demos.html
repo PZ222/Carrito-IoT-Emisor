@@ -7,12 +7,10 @@
   <link rel="icon" type="image/png" href="./assets/2.png">
 
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
-  
-  <link rel="stylesheet" href="./demos.css">
   <link rel="stylesheet" href="styles.navbar.css">
+  <link rel="stylesheet" href="demos.css">
 </head>
-<body class="obstaculos">
+<body class="theme-red">
   <!-- NAVBAR -->
   <header class="topbar">
     <div class="brand">Carrito IoT</div>
@@ -38,108 +36,115 @@
       <span id="badgeAPI" class="chip err">Comprobando…</span>
     </section>
 
-    <!-- Crear -->
-    <section class="card">
-      <div class="card-title">Crear secuencia</div>
-      <div class="grid-3">
-        <div>
-          <label>Dispositivo:</label>
-          <input id="inputDisp" type="number" value="1" min="1" class="input">
-        </div>
-        <div>
-          <label>Nombre:</label>
-          <input id="inputNombre" class="input" value="DEMO_1">
-        </div>
-        <div>
-          <label>Descripción:</label>
-          <input id="inputDesc" class="input" value="Secuencia simple">
-        </div>
-      </div>
-
-      <div class="mt-10">
-        <button id="btnCrearSeq" class="btn primary">Crear secuencia</button>
-        <span id="badgeCrear" class="chip">—</span>
-      </div>
-    </section>
-
-    <!-- Agregar pasos / Ejecutar -->
-    <section class="card">
-      <div class="card-title">Agregar paso / Ejecutar</div>
-
-      <!-- Selector de secuencia -->
-      <div class="grid-4 grid-cargar">
-        <div class="col1">
-          <label>Secuencia:</label>
-          <select id="selSecuencias" class="input"></select>
+    <!-- Layout principal en 2 columnas -->
+    <div class="cards-grid">
+      <!-- Crear secuencia -->
+      <section class="card card-small">
+        <div class="card-title">Crear secuencia</div>
+        <div class="grid-3 grid-compact">
+          <div>
+            <label>Dispositivo:</label>
+            <input id="inputDisp" type="number" value="1" min="1" class="input">
+          </div>
+          <div>
+            <label>Nombre:</label>
+            <input id="inputNombre" class="input" value="DEMO_1">
+          </div>
+          <div>
+            <label>Descripción:</label>
+            <input id="inputDesc" class="input" value="Secuencia simple">
+          </div>
         </div>
 
-        <div class="col2">
-          <button id="btnCargar" class="btn btn-cargar">Cargar</button>
+        <div class="row mt-8">
+          <button id="btnCrearSeq" class="btn primary">Crear secuencia</button>
+          <span id="badgeCrear" class="chip chip-mini">—</span>
         </div>
-      </div>
+      </section>
 
-      <!-- Descripción de la secuencia -->
-      <div class="mt-10">
-        <div class="section-title">Descripción de la secuencia</div>
-        <div id="seqDesc" class="desc-box">
-          Selecciona una secuencia y pulsa <strong>Cargar</strong> para ver su descripción.
+      <!-- Agregar pasos / Ejecutar -->
+      <section class="card card-main">
+        <div class="card-title">Agregar paso / Ejecutar</div>
+
+        <div class="card-main-grid">
+          <!-- Columna izquierda: datos de la secuencia -->
+          <div class="col-main-left">
+            <!-- Selector de secuencia -->
+            <div class="grid-cargar">
+              <div class="col1">
+                <label>Secuencia:</label>
+                <select id="selSecuencias" class="input"></select>
+              </div>
+              <div class="col2">
+                <button id="btnCargar" class="btn btn-cargar">Cargar</button>
+              </div>
+            </div>
+
+            <!-- Descripción -->
+            <div class="mt-6">
+              <div class="section-title">Descripción de la secuencia</div>
+              <div id="seqDesc" class="desc-box">
+                Selecciona una secuencia y pulsa <strong>Cargar</strong> para ver su descripción.
+              </div>
+            </div>
+
+            <!-- Agregar paso -->
+            <div class="grid-4 grid-compact mt-10">
+              <div>
+                <label>Movimiento (catálogo):</label>
+                <select id="selModelo" class="input">
+                  <option value="1">ADELANTE (1)</option>
+                  <option value="2">ATRÁS (2)</option>
+                  <option value="3">DETENER (3)</option>
+                  <option value="4">Vta Adel Der (4)</option>
+                  <option value="5">Vta Adel Izq (5)</option>
+                  <option value="6">Vta Atr Der (6)</option>
+                  <option value="7">Vta Atr Izq (7)</option>
+                  <option value="8">Giro 90° Der (8)</option>
+                  <option value="9">Giro 90° Izq (9)</option>
+                  <option value="10">Giro 360° Der (10)</option>
+                  <option value="11">Giro 360° Izq (11)</option>
+                </select>
+              </div>
+
+              <div>
+                <label>Orden:</label>
+                <input id="inputOrden" type="number" class="input" min="1" value="1">
+              </div>
+
+              <div>
+                <label>Duración (ms):</label>
+                <input id="inputDur" type="number" class="input" min="0" value="1000">
+              </div>
+
+              <div>
+                <label>Velocidad (0–255):</label>
+                <input id="inputVel" type="number" class="input" min="0" max="255" value="150">
+              </div>
+
+              <div class="self-end">
+                <button id="btnAgregarPaso" class="btn">Agregar paso</button>
+              </div>
+            </div>
+
+            <!-- Iniciar -->
+            <div class="mt-10">
+              <button id="btnIniciar" class="btn primary btn-full">Iniciar secuencia</button>
+            </div>
+          </div>
+
+          <!-- Columna derecha: lista de pasos -->
+          <div class="col-main-right">
+            <div class="section-title">Pasos</div>
+            <div id="listaPasos" class="list list-scroll"></div>
+          </div>
         </div>
-      </div>
-
-      <!-- Agregar paso -->
-      <div class="grid-4 mt-10">
-        <div>
-          <label>Movimiento (catálogo):</label>
-          <select id="selModelo" class="input">
-            <option value="1">ADELANTE (1)</option>
-            <option value="2">ATRÁS (2)</option>
-            <option value="3">DETENER (3)</option>
-            <option value="4">Vta Adel Der (4)</option>
-            <option value="5">Vta Adel Izq (5)</option>
-            <option value="6">Vta Atr Der (6)</option>
-            <option value="7">Vta Atr Izq (7)</option>
-            <option value="8">Giro 90° Der (8)</option>
-            <option value="9">Giro 90° Izq (9)</option>
-            <option value="10">Giro 360° Der (10)</option>
-            <option value="11">Giro 360° Izq (11)</option>
-          </select>
-        </div>
-
-        <div>
-          <label>Orden:</label>
-          <input id="inputOrden" type="number" class="input" min="1" value="1">
-        </div>
-
-        <div>
-          <label>Duración (ms):</label>
-          <input id="inputDur" type="number" class="input" min="0" value="1000">
-        </div>
-
-        <div>
-          <label>Velocidad (0–255):</label>
-          <input id="inputVel" type="number" class="input" min="0" max="255" value="150">
-        </div>
-
-        <div class="self-end" style="margin-top: 8px;">
-          <button id="btnAgregarPaso" class="btn">Agregar paso</button>
-        </div>
-      </div>
-
-      <!-- Botón iniciar -->
-      <div class="mt-16">
-        <button id="btnIniciar" class="btn primary">Iniciar secuencia</button>
-      </div>
-
-      <!-- Lista -->
-      <div class="mt-16">
-        <div class="section-title">Pasos</div>
-        <div id="listaPasos" class="list"></div>
-      </div>
-    </section>
+      </section>
+    </div>
 
     <!-- Pie -->
     <footer class="footer">
-      <div class="chip muted">© Rafael • Carrito IoT</div>
+      <div class="chip muted chip-mini">© Rafael • Carrito IoT</div>
     </footer>
   </main>
 
