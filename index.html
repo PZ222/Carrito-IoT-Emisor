@@ -4,26 +4,30 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Carrito IoT – Control</title>
+
+  <!-- Favicon -->
   <link rel="icon" type="image/png" href="./assets/1.png">
+
+  <!-- Fuentes -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+
+  <!-- Estilos -->
   <link rel="stylesheet" href="styles.emisor.css">
   <link rel="stylesheet" href="styles.navbar.css">
 </head>
-
 <body class="emisor">
-
   <!-- NAVBAR -->
   <header class="topbar">
     <div class="brand">Carrito IoT - Control</div>
-
     <nav class="nav">
       <a class="pill active" href="https://pz222.github.io/Carrito-IoT-Emisor/index.html">
-        🎮 Control
+        <span class="ico">🎮</span> Control
       </a>
       <a class="pill" href="https://pz222.github.io/Carrito-IoT-Receptor/">
-        🦻 Monitor
+        <span class="ico">🦻</span> Monitor
       </a>
       <a class="pill" href="https://pz222.github.io/Carrito-IoT-Emisor/demos.html">
-        🧩 Demos
+        <span class="ico">🧩</span> Demos
       </a>
     </nav>
   </header>
@@ -31,47 +35,89 @@
   <main class="container">
     <h1 class="page-title">CONTROL DE MOVIMIENTOS</h1>
 
-    <div class="badge">API: <span id="apiUrl">http://3.225.81.202:5500</span></div>
-    <div id="wsBadge" class="badge">WS: desconectado</div>
+    <!-- Estado API / WS -->
+    <section class="hud">
+      <span class="chip hint">API: <span id="apiUrl">http://3.225.81.202:5500</span></span>
+      <span id="wsBadge" class="chip">WS: desconectado</span>
+    </section>
 
-    <section class="panel">
+    <!-- Panel principal -->
+    <section class="panel-control">
+      <div class="header-row">
+        <div class="field-inline">
+          <label for="deviceId">Dispositivo:</label>
+          <input id="deviceId" type="number" min="1" value="1">
+        </div>
 
-      <div class="controls">
-        <label>Dispositivo:</label>
-        <input id="deviceId" type="number" min="1" value="1">
+        <!-- Botón de modo de velocidad -->
+        <button id="btnVelocidad" class="btn-speed speed-medio">
+          Modo: Medio
+        </button>
       </div>
 
-      <!-- GRID 4–4–3 -->
-      <div class="pad-grid">
+      <p id="statusText" class="status-line">Listo</p>
 
-        <!-- 4 ARRIBA -->
-        <div class="tile" data-cmd="ADELANTE"><i>↑</i><span>Adelante</span></div>
-        <div class="tile" data-cmd="VUELTA_ADELANTE_IZQUIERDA"><i>↖</i><span>Vta Adel Izq</span></div>
-        <div class="tile" data-cmd="VUELTA_ADELANTE_DERECHA"><i>↗</i><span>Vta Adel Der</span></div>
-        <div class="tile" data-cmd="ATRAS"><i>↓</i><span>Atrás</span></div>
+      <div class="pad-wrapper">
+        <!-- GRID 4x3 (4 / 4 / 3+1 vacío) -->
+        <div id="tilesGrid" class="pad-grid">
+          <!-- Fila 1 -->
+          <div class="tile" data-cmd="ADELANTE">
+            <div class="tile-icon">↑</div>
+            <div class="tile-label">Adelante</div>
+          </div>
+          <div class="tile" data-cmd="VUELTA_ADELANTE_IZQUIERDA">
+            <div class="tile-icon">↖</div>
+            <div class="tile-label">Vta Adel Izq</div>
+          </div>
+          <div class="tile" data-cmd="VUELTA_ADELANTE_DERECHA">
+            <div class="tile-icon">↗</div>
+            <div class="tile-label">Vta Adel Der</div>
+          </div>
+          <div class="tile tile-stop" data-cmd="DETENER">
+            <div class="tile-icon">■</div>
+            <div class="tile-label">Detener</div>
+          </div>
 
-        <!-- 4 MEDIO -->
-        <div class="tile" data-cmd="VUELTA_ATRAS_IZQUIERDA"><i>↙</i><span>Vta Atr Izq</span></div>
-        <div class="tile" data-cmd="DETENER"><i>■</i><span>Detener</span></div>
-        <div class="tile" data-cmd="VUELTA_ATRAS_DERECHA"><i>↘</i><span>Vta Atr Der</span></div>
-        <div class="tile" data-cmd="GIRO_90_IZQUIERDA"><i>↺</i><span>Giro 90° Izq</span></div>
+          <!-- Fila 2 -->
+          <div class="tile" data-cmd="ATRAS">
+            <div class="tile-icon">↓</div>
+            <div class="tile-label">Atrás</div>
+          </div>
+          <div class="tile" data-cmd="VUELTA_ATRAS_IZQUIERDA">
+            <div class="tile-icon">↙</div>
+            <div class="tile-label">Vta Atrás Izq</div>
+          </div>
+          <div class="tile" data-cmd="VUELTA_ATRAS_DERECHA">
+            <div class="tile-icon">↘</div>
+            <div class="tile-label">Vta Atrás Der</div>
+          </div>
+          <div class="tile empty"></div>
 
-        <!-- 3 ABAJO -->
-        <div class="tile" data-cmd="GIRO_90_DERECHA"><i>↻</i><span>Giro 90° Der</span></div>
-        <div class="tile" data-cmd="GIRO_360_IZQUIERDA"><i>⟲</i><span>Giro 360° Izq</span></div>
-        <div class="tile" data-cmd="GIRO_360_DERECHA"><i>⟳</i><span>Giro 360° Der</span></div>
-
-        <!-- HUECO PARA CENTRAR -->
-        <div class="tile empty"></div>
-
+          <!-- Fila 3 -->
+          <div class="tile" data-cmd="GIRO_90_IZQUIERDA">
+            <div class="tile-icon">↺</div>
+            <div class="tile-label">Giro 90° Izq</div>
+          </div>
+          <div class="tile" data-cmd="GIRO_90_DERECHA">
+            <div class="tile-icon">↻</div>
+            <div class="tile-label">Giro 90° Der</div>
+          </div>
+          <div class="tile" data-cmd="GIRO_360_IZQUIERDA">
+            <div class="tile-icon">⟲</div>
+            <div class="tile-label">Giro 360° Izq</div>
+          </div>
+          <div class="tile" data-cmd="GIRO_360_DERECHA">
+            <div class="tile-icon">⟳</div>
+            <div class="tile-label">Giro 360° Der</div>
+          </div>
+        </div>
       </div>
     </section>
 
-    <p id="statusText">Listo</p>
-
+    <footer class="footer">
+      <div class="chip muted">© Rafael • Carrito IoT</div>
+    </footer>
   </main>
-
-  <footer class="footer">© Rafael • Carrito IoT</footer>
 
   <script src="app.js"></script>
 </body>

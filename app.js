@@ -1,161 +1,232 @@
-// ================= EMISOR =================
-const API = "http://3.225.81.202:5500/api";
-const WS  = "ws://3.225.81.202:5500/ws";
+// ==================== CONFIG ====================
+const API_BASE = "http://3.225.81.202:5500";
+const API_MOVS = `${API_BASE}/api/movimientos`;
+const WS_URL   = "ws://3.225.81.202:5500/ws";
 
-// Elementos del HTML
-const els = {
-  deviceId:  document.getElementById("deviceId"),
-  status:    document.getElementById("statusText"),
-  wsBadge:   document.getElementById("wsBadge"),
-  tiles:     document.querySelectorAll(".tile"),
-  apiUrlEl:  document.getElementById("apiUrl")
-};
+// ===== refs DOM
+const apiUrlSpan   = document.getElementById("apiUrl");
+const wsBadge      = document.getElementById("wsBadge");
+const deviceInput  = document.getElementById("deviceId");
+const tilesGrid    = document.getElementById("tilesGrid");
+const statusText   = document.getElementById("statusText");
+const btnVelocidad = document.getElementById("btnVelocidad");
 
-// Mostrar la URL base de la API
-if (els.apiUrlEl) els.apiUrlEl.textContent = API.replace(/\/api$/, "");
+// Mostrar URL API
+if (apiUrlSpan) apiUrlSpan.textContent = API_BASE;
 
-// ========== MAPEO COMANDOS -> clave_modelo ==========
-// Debe coincidir con catalogo_movimientos de tu BD
-const CMD_TO_MODEL = {
-  "ADELANTE":                  1,
-  "ATRAS":                     2,
-  "DETENER":                   3,
-  "VUELTA_ADELANTE_DERECHA":   4,
-  "VUELTA_ADELANTE_IZQUIERDA": 5,
-  "VUELTA_ATRAS_DERECHA":      6,
-  "VUELTA_ATRAS_IZQUIERDA":    7,
-  "GIRO_90_DERECHA":           8,
-  "GIRO_90_IZQUIERDA":         9,
-  "GIRO_360_DERECHA":          10,
-  "GIRO_360_IZQUIERDA":        11
-};
+// ==================== MODOS DE VELOCIDAD ====================
+// Solo 2 modos: Medio y Rápido
+const speedModes = [
+  { id: "medio",  label: "Modo: Medio",  className: "speed-medio",  value: 200 },
+  { id: "rapido", label: "Modo: Rápido", className: "speed-rapido", value: 250 }
+];
 
-// Comandos que deben ser continuos mientras el botón esté presionado
-const CONTINUOUS_CMDS = new Set([
-  "ADELANTE",
-  "ATRAS",
-  "VUELTA_ADELANTE_IZQUIERDA",
-  "VUELTA_ADELANTE_DERECHA",
-  "VUELTA_ATRAS_IZQUIERDA",
-  "VUELTA_ATRAS_DERECHA"
-]);
+let currentSpeedIndex = 0; // arrancamos en "Medio"
 
-function setStatus(t){
-  if (els.status) els.status.textContent = t;
+function getCurrentSpeedValue() {
+  return speedModes[currentSpeedIndex].value;
 }
 
-// Envío de movimiento
-async function postMovimiento(claveModelo){
-  const id = Number(els.deviceId?.value || 1);
-  const payload = {
-    id_dispositivo: id,
-    clave_modelo: claveModelo,
-    origen: "MANUAL"
-  };
-  try{
-    const res = await fetch(`${API}/movimientos`, {
-      method: "POST",
-      headers: { "Content-Type":"application/json" },
-      body: JSON.stringify(payload)
-    });
-    if (!res.ok){
-      const txt = await res.text().catch(()=> "");
-      throw new Error(`${res.status} ${res.statusText} ${txt}`);
-    }
-    const j = await res.json().catch(()=> ({}));
-    if (j && j.ok === false) throw new Error(j.error || "Error API");
-  }catch(err){
-    console.error(err);
-    setStatus(`Error: ${err.message}`);
-  }
+function updateSpeedButton() {
+  if (!btnVelocidad) return;
+  const mode = speedModes[currentSpeedIndex];
+
+  btnVelocidad.classList.remove("speed-lento", "speed-medio", "speed-rapido");
+  btnVelocidad.classList.add(mode.className);
+  btnVelocidad.textContent = mode.label;
 }
 
-// Resolver comando desde el tile (usa data-cmd del HTML)
-function getCmdFromTile(tile){
-  const cmdAttr = tile.getAttribute("data-cmd");
-  if (cmdAttr) return cmdAttr;
+// Inicializamos el botón al cargar
+updateSpeedButton();
 
-  const label = (tile.textContent || "").toUpperCase();
+// Click en el botón → ciclar modos
+if (btnVelocidad) {
+  btnVelocidad.addEventListener("click", () => {
+    currentSpeedIndex = (currentSpeedIndex + 1) % speedModes.length;
+    updateSpeedButton();
 
-  if (label.includes("ADELANTE") && !label.includes("VTA")) return "ADELANTE";
-  if (label.includes("VTA ADEL") && label.includes("IZQ"))  return "VUELTA_ADELANTE_IZQUIERDA";
-  if (label.includes("VTA ADEL") && label.includes("DER"))  return "VUELTA_ADELANTE_DERECHA";
-  if (label.includes("ATRÁS") || label.includes("ATRAS"))   return "ATRAS";
-  if (label.includes("VTA ATR") && label.includes("IZQ"))   return "VUELTA_ATRAS_IZQUIERDA";
-  if (label.includes("VTA ATR") && label.includes("DER"))   return "VUELTA_ATRAS_DERECHA";
-  if (label.includes("GIRO 90") && label.includes("IZQ"))   return "GIRO_90_IZQUIERDA";
-  if (label.includes("GIRO 90") && label.includes("DER"))   return "GIRO_90_DERECHA";
-  if (label.includes("GIRO 360") && label.includes("IZQ"))  return "GIRO_360_IZQUIERDA";
-  if (label.includes("GIRO 360") && label.includes("DER"))  return "GIRO_360_DERECHA";
-
-  return null;
-}
-
-// ===== Eventos de los tiles =====
-function bindTiles(){
-  els.tiles.forEach(tile => {
-    const cmd = getCmdFromTile(tile);
-    if (!cmd){
-      tile.addEventListener("click", () => setStatus("Tile sin comando mapeado"));
-      return;
-    }
-
-    const modelo = CMD_TO_MODEL[cmd];
-
-    // pointerdown -> iniciar acción
-    tile.addEventListener("pointerdown", ev => {
-      ev.preventDefault();
-      if (!modelo){
-        setStatus("Error: comando no mapeado");
-        return;
-      }
-
-      if (CONTINUOUS_CMDS.has(cmd)){
-        // Movimiento continuo: solo un comando para arrancar
-        setStatus(`Moviendo: ${cmd}`);
-        postMovimiento(modelo);
-      }else{
-        // Giros: un solo evento
-        setStatus(`Ejecutando: ${cmd}`);
-        postMovimiento(modelo);
-      }
-    });
-
-    // pointerup / pointerleave -> si es continuo, mandar DETENER
-    const stopHandler = ev => {
-      ev.preventDefault();
-      if (CONTINUOUS_CMDS.has(cmd)){
-        const modeloDetener = CMD_TO_MODEL["DETENER"];
-        if (modeloDetener){
-          setStatus("Detenido");
-          postMovimiento(modeloDetener);
-        }
-      }
-    };
-
-    tile.addEventListener("pointerup", stopHandler);
-    tile.addEventListener("pointerleave", stopHandler);
-
-    // Evitar doble disparo por click en comandos continuos
-    tile.addEventListener("click", ev => {
-      if (CONTINUOUS_CMDS.has(cmd)){
-        ev.preventDefault();
-      }
-    });
+    const mode = speedModes[currentSpeedIndex];
+    setStatus(`Velocidad: ${mode.label.replace("Modo: ", "")}`);
   });
 }
 
-// WebSocket (solo indicador de estado)
-function initWS(){
-  try{
-    const ws = new WebSocket(WS);
-    ws.onopen  = () => els.wsBadge && (els.wsBadge.textContent = "WS: conectado");
-    ws.onclose = () => els.wsBadge && (els.wsBadge.textContent = "WS: desconectado");
-    ws.onerror = () => els.wsBadge && (els.wsBadge.textContent = "WS: error");
-  }catch{/* ignore */}
+// ==================== MAPEO CMD → clave_modelo ====================
+const CMD_TO_MODEL = {
+  "ADELANTE": 1,
+  "ATRAS": 2,
+  "DETENER": 3,
+  "VUELTA_ADELANTE_DERECHA": 4,
+  "VUELTA_ADELANTE_IZQUIERDA": 5,
+  "VUELTA_ATRAS_DERECHA": 6,
+  "VUELTA_ATRAS_IZQUIERDA": 7,
+  "GIRO_90_DERECHA": 8,
+  "GIRO_90_IZQUIERDA": 9,
+  "GIRO_360_DERECHA": 10,
+  "GIRO_360_IZQUIERDA": 11
+};
+
+// ==================== UTILIDADES ====================
+function setStatus(msg, isError = false) {
+  if (!statusText) return;
+  statusText.textContent = msg || "Listo";
+  statusText.style.color = isError ? "#FCA5A5" : "#9CA3AF";
 }
 
-// Arranque
-bindTiles();
-initWS();
-setStatus("Listo");
+// ==================== WEB SOCKET (solo monitor de estado) ====================
+let ws = null;
+let wsReconnectTimer = null;
+
+function updateWsBadge(text, ok) {
+  if (!wsBadge) return;
+  wsBadge.textContent = text;
+  wsBadge.style.color = ok ? "#6EE7B7" : "#FCA5A5";
+}
+
+function connectWS() {
+  try {
+    if (ws) {
+      ws.close();
+      ws = null;
+    }
+
+    ws = new WebSocket(WS_URL);
+
+    ws.onopen = () => {
+      updateWsBadge("WS: conectado", true);
+      console.log("[WS] conectado");
+    };
+
+    ws.onclose = () => {
+      updateWsBadge("WS: desconectado", false);
+      console.log("[WS] cerrado");
+      wsReconnectTimer = setTimeout(connectWS, 3000);
+    };
+
+    ws.onerror = (err) => {
+      console.error("[WS] error", err);
+      updateWsBadge("WS: error", false);
+    };
+
+    ws.onmessage = (ev) => {
+      // si algún día quieres reaccionar a algo en el control:
+      // console.log("[WS] msg:", ev.data);
+    };
+  } catch (e) {
+    console.error("[WS] excepción al conectar", e);
+    updateWsBadge("WS: error", false);
+  }
+}
+
+// ==================== HTTP POST MOVIMIENTOS ====================
+async function postMovimiento(cmd) {
+  const idDispositivo = Number(deviceInput?.value || 1);
+  const clave_modelo = CMD_TO_MODEL[cmd];
+
+  if (!clave_modelo) {
+    console.warn("[CMD] comando no mapeado:", cmd);
+    return;
+  }
+
+  const velocidad = getCurrentSpeedValue();
+
+  const payload = {
+    id_dispositivo: idDispositivo,
+    clave_modelo,
+    origen: "MANUAL",
+    resultado: "OK",
+    parametros_json: {
+      velocidad
+    }
+  };
+
+  try {
+    const res = await fetch(API_MOVS, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      mode: "cors",
+      body: JSON.stringify(payload)
+    });
+
+    if (!res.ok) {
+      const txt = await res.text();
+      console.error("[POST] Error", res.status, txt);
+      setStatus("Error al enviar movimiento", true);
+      return;
+    }
+
+    setStatus(`Enviado: ${cmd} (vel=${velocidad})`);
+  } catch (err) {
+    console.error("[POST] Excepción", err);
+    setStatus("Error de red al enviar movimiento", true);
+  }
+}
+
+// ==================== MANEJO DE BOTONES (mouse + touch) ====================
+let activeCmd = null;
+
+function handlePressStart(cmd) {
+  activeCmd = cmd;
+  postMovimiento(cmd);
+}
+
+function handlePressEnd() {
+  if (!activeCmd) return;
+
+  if (activeCmd !== "DETENER") {
+    postMovimiento("DETENER");
+  }
+  activeCmd = null;
+}
+
+function setupTileEvents(tile) {
+  const cmd = tile.getAttribute("data-cmd");
+  if (!cmd) return;
+
+  // MOUSE
+  tile.addEventListener("mousedown", (ev) => {
+    ev.preventDefault();
+    handlePressStart(cmd);
+  });
+
+  tile.addEventListener("mouseup", (ev) => {
+    ev.preventDefault();
+    handlePressEnd();
+  });
+
+  tile.addEventListener("mouseleave", (ev) => {
+    if (ev.buttons === 1) {
+      handlePressEnd();
+    }
+  });
+
+  // TOUCH
+  tile.addEventListener("touchstart", (ev) => {
+    ev.preventDefault();
+    handlePressStart(cmd);
+  }, { passive: false });
+
+  tile.addEventListener("touchend", (ev) => {
+    ev.preventDefault();
+    handlePressEnd();
+  }, { passive: false });
+
+  tile.addEventListener("touchcancel", (ev) => {
+    ev.preventDefault();
+    handlePressEnd();
+  }, { passive: false });
+}
+
+// ==================== INIT ====================
+function init() {
+  connectWS();
+
+  if (tilesGrid) {
+    const tiles = tilesGrid.querySelectorAll(".tile");
+    tiles.forEach(setupTileEvents);
+  }
+
+  updateSpeedButton();
+  setStatus("Listo");
+}
+
+document.addEventListener("DOMContentLoaded", init);
